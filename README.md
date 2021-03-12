@@ -1,6 +1,7 @@
 # Evaluating bias of static embeddings
 
 ## Requirements
+- python==3.7.3
 ```
 pip install -r requirements.txt
 ```
