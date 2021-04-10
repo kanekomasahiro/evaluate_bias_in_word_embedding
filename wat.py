@@ -1,5 +1,7 @@
-import numpy as np
 import argparse
+import linecache
+import numpy as np
+
 from gensim.models import KeyedVectors
 from scipy.stats import pearsonr
 
@@ -14,8 +16,29 @@ def parse_args():
 
     return args
 
+
+def load_embedding_with_gensim(embedding_name):
+    '''
+    Load embeddings with gensim.
+    '''
+    if embedding_name.endswith('bin'):
+        binary = True
+        no_header = False
+    else:
+        binary = False
+        if linecache.getline(embedding_name, 1).split() == 2:
+            no_header = False
+        else:
+            no_header = True
+            
+    embedding = KeyedVectors.load_word2vec_format(embedding_name, binary=binary, no_header=no_header)
+	
+    return embedding
+
+
 def cos_sim(v1, v2):
         return np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+
 
 def eval_wat(emb, output, path, word1_list, word2_list):
     gold_d = {}
@@ -44,14 +67,10 @@ def eval_wat(emb, output, path, word1_list, word2_list):
         fw.write(f'Pearson’s correlation coefficient: {r}\n')
         fw.write(f'P-value: {p}\n')
 
+
 def main(args):
-    embedding = args.embedding
-    if embedding.endswith('bin'):
-        binary = True
-    else:
-        binary = False
-    emb = KeyedVectors.load_word2vec_format(embedding, binary=binary)
-    emb = {word: emb[word] for word in emb.vocab.keys()}
+    emb = load_embedding_with_gensim(args.embedding)
+    #emb = {word: emb[word] for word in emb.vocab.keys()}
 
     word1_list = ['he', 'father', 'son', 'husband', 'grandfather',
                   'brother', 'man', 'boy', 'uncle', 'gentleman']

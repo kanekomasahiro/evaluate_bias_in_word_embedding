@@ -1,7 +1,9 @@
+import argparse
+import linecache
 from numpy import dot
+
 from numpy.linalg import norm
 from gensim.models import KeyedVectors
-import argparse
 
 
 def parse_args():
@@ -13,6 +15,26 @@ def parse_args():
     args = parser.parse_args()
 
     return args
+
+
+def load_embedding_with_gensim(embedding_name):
+    '''
+    Load embeddings with gensim.
+    '''
+    if embedding_name.endswith('bin'):
+        binary = True
+        no_header = False
+    else:
+        binary = False
+        if linecache.getline(embedding_name, 1).split() == 2:
+            no_header = False
+        else:
+            no_header = True
+
+    embedding = KeyedVectors.load_word2vec_format(embedding_name, binary=binary, no_header=no_header)
+
+    return embedding
+
 
 def eval_sembias(emb, output):
     sembias = [l.strip() for l in open('data/sembias.txt')]
@@ -72,12 +94,9 @@ def eval_sembias(emb, output):
         fw.write(f'sub stereotype: {sub_stereotype_score}\n')
         fw.write(f'sub none: {sub_none_score}\n')
 
+
 def main(args):
-    if args.embedding.endswith('bin'):
-        binary = True
-    else:
-        binary = False
-    emb = KeyedVectors.load_word2vec_format(args.embedding, binary=binary)
+    emb = load_embedding_with_gensim(args.embedding)
     eval_sembias(emb, args.output)
 
 if __name__ == '__main__':

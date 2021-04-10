@@ -1,9 +1,11 @@
-import numpy as np
-from gensim.models import KeyedVectors
 import sys
 import argparse
 import json
+import linecache
+import numpy as np
+
 from scipy import stats
+from gensim.models import KeyedVectors
 
 
 def parse_args():
@@ -16,6 +18,25 @@ def parse_args():
     args = parser.parse_args()
 
     return args
+
+
+def load_embedding_with_gensim(embedding_name):
+    '''
+    Load embeddings with gensim.
+    '''
+    if embedding_name.endswith('bin'):
+        binary = True
+        no_header = False
+    else:
+        binary = False
+        if linecache.getline(embedding_name, 1).split() == 2:
+            no_header = False
+        else:
+            no_header = True
+
+    embedding = KeyedVectors.load_word2vec_format(embedding_name, binary=binary, no_header=no_header)
+
+    return embedding
 
 
 def word_assoc(w, A, B, emb):
@@ -77,11 +98,7 @@ def eval_weat(emb, output):
 
 
 def main(args):
-    if args.embedding.endswith('bin'):
-        binary = True
-    else:
-        binary = False
-    emb = KeyedVectors.load_word2vec_format(args.embedding, binary=binary)
+    emb = load_embedding_with_gensim(args.embedding)
     eval_weat(emb, args.output)
 
 
