@@ -1,4 +1,4 @@
-# Evaluating bias of static embeddings
+# Evaluating bias in static embeddings
 
 ## Requirements
 - python==3.7.3
